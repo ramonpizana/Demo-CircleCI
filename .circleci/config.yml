@@ -1,0 +1,53 @@
+version: 2.1
+
+orbs:
+  azure-aks: circleci/azure-aks@0.3.0
+
+
+jobs:
+  test-cluster:
+    executor: azure-aks/default
+    parameters:
+      cluster-name:
+        description: |
+          Name of the AKS cluster
+        type: string
+      resource-group:
+        description: |
+          Resource group that the cluster is in
+        type: string
+    steps:
+      - azure-aks/update-kubeconfig-with-credentials:
+          cluster-name: << parameters.cluster-name >>
+          install-kubectl: true
+          perform-login: true
+          resource-group: << parameters.resource-group >>
+      - run:
+          command: |
+            kubectl get services
+          name: Test cluster
+orbs:
+  azure-aks: circleci/azure-aks@0.2.1
+  kubernetes: circleci/kubernetes@0.4.0
+version: 2.1
+workflows:
+  deployment:
+    jobs:
+      - azure-aks/create-cluster:
+          cluster-name: my-aks-demo
+          create-resource-group: true
+          generate-ssh-keys: true
+          location: eastus
+          resource-group: my-aks-demo-rg
+      - test-cluster:
+          cluster-name: my-aks-demo
+          requires:
+            - azure-aks/create-cluster
+          resource-group: my-aks-demo-rg
+      - azure-aks/delete-cluster:
+          cluster-name: my-aks-demo
+          delete-resource-group: true
+          delete-service-principal: true
+          requires:
+            - test-cluster
+          resource-group: my-aks-demo-rg
