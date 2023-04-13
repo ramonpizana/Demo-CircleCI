@@ -33,19 +33,19 @@ workflows:
     jobs:
       - azure-aks/create-cluster:
           cluster-name: my-aks-demo
-          create-resource-group: true
+          create-resource-group: false
           generate-ssh-keys: true
           location: eastus
-          resource-group: my-aks-demo-rg
+          resource-group: ramon-pizana
       - test-cluster:
           cluster-name: my-aks-demo
           requires:
             - azure-aks/create-cluster
-          resource-group: my-aks-demo-rg
+          resource-group: ramon-pizana
       - azure-aks/delete-cluster:
           cluster-name: my-aks-demo
-          delete-resource-group: true
-          delete-service-principal: true
+          delete-resource-group: false
+          delete-service-principal: false
           requires:
             - test-cluster
-          resource-group: my-aks-demo-rg
+          resource-group: ramon-pizana
